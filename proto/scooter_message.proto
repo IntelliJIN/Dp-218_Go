@@ -1,0 +1,22 @@
+syntax = "proto3";
+option go_package = "./;pb";
+
+
+message ClientRequest {
+	uint64 id = 1;
+}
+
+message ClientMessage {
+	uint64 id = 1;
+	double x = 2;
+	double y = 3;
+}
+
+message ServerMessage {
+	uint32 code = 1;
+}
+
+service ScooterService {
+	rpc Register(ClientRequest)returns(stream ServerMessage){};
+	rpc Receive(stream ClientMessage)returns(ServerMessage){};
+}
