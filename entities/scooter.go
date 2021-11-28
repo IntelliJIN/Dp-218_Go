@@ -3,11 +3,12 @@ package entities
 import "time"
 
 type ScooterUploaded struct {
+	PaymentTypeId	int  	`json,scv:"payment_type_id"`
 	ModelName 	  	string  `json,csv:"model_name"`
 	MaxWeight       int     `json,csv:"max_weight"`
-	PaymentType		int  	`json,scv:"payment_type"`
 	Speed 			int     `json,scv:"speed"`
-//	SerialNumbers   []int   `json,scv:"serial_numbers"`
+	OwnerId  	 	int		`json,scv:"owner_id"`
+	SerialNumber 	int		`json,scv:"serial_number"`
 }
 
 type Test struct {
@@ -20,7 +21,6 @@ type Scooter struct {
 	ModelId  	 int	`json:"model_id"`
 	OwnerId  	 int	`json:"owner_id"`
 	SerialNumber int	`json:"serial_number"`
-
 }
 
 type ScooterModel struct {

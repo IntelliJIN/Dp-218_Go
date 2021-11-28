@@ -65,18 +65,17 @@ func (f FileRepository) ConvertToStruct(path string)[]entities.ScooterUploaded {
 	return scooters
 }
 
-func (f FileRepository) InsertToDb(scooters []entities.ScooterUploaded) error {
+func (f FileRepository) InsertScooterModelData(scooters []entities.ScooterUploaded) error {
 	valueStrings := make([]string, 0, len(scooters))
 	valueArgs := make([]interface{}, 0, len(scooters) * 4)
 	for i, scooter := range scooters {
 		valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d", i*4+1, i*4+2, i*4+3, i*4+4))
+		valueArgs = append(valueArgs, scooter.PaymentTypeId)
 		valueArgs = append(valueArgs, scooter.ModelName)
 		valueArgs = append(valueArgs, scooter.MaxWeight)
-		valueArgs = append(valueArgs, scooter.PaymentType)
 		valueArgs = append(valueArgs, scooter.Speed)
 	}
-
-	stmt := fmt.Sprintf("INSERT INTO scooters(model_name, max_weight, payment_type, speed) VALUES %s", strings.Join(valueStrings, ","))
+	stmt := fmt.Sprintf("INSERT INTO scooter_models(payment_type_id, model_name, max_weight, speed) VALUES %s", strings.Join(valueStrings, ","))
 	if _, err := f.db.Exec(context.Background(),stmt, valueArgs...)
 		err != nil {
 		fmt.Println("Unable to insert due to: ", err)

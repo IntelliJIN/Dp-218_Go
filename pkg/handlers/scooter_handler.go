@@ -1,5 +1,6 @@
-package handlers
 
+package handlers
+/*
 import (
 	"Dp-218_Go/entities"
 	"Dp-218_Go/pkg/services"
@@ -116,3 +117,4 @@ func (s ScooterHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 }
+*/

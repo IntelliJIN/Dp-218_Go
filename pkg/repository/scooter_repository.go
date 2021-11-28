@@ -1,5 +1,6 @@
-package repository
 
+package repository
+/*
 import (
 	"context"
 	"Dp-218_Go/entities"
@@ -20,9 +21,8 @@ func NewScooterRepository(db *pgx.Conn) *ScooterRepository {
 type ScooterRepositoryI interface {
 	Create(scooter *entities.Scooter) (int, error)
 	GetAll() (*[]entities.Scooter, error)
-	GetByBrand(brand string) (*entities.Scooter, error)
 	GetByID(id int) (*entities.Scooter, error)
-	Update(scooter *entities.Scooter) (int, error)
+	Update(scooter *entities.ScooterModel) (int, error)
 	Delete(id int) (int, error)
 }
 
@@ -35,7 +35,7 @@ func (s ScooterRepository) GetAll() (*[]entities.Scooter, error) {
 	}
 	scooter := entities.Scooter{}
 	for rows.Next() {
-		err = rows.Scan(&scooter.Id, &scooter.Model, &scooter.Brand, &scooter.MaxDistance, &scooter.Capacity, &scooter.MaxWeight)
+		err = rows.Scan(&scooter.Id, &scooter.ModelId, &scooter.OwnerId, &scooter.SerialNumber)
 		if err != nil {
 			return nil, err
 		}
@@ -47,7 +47,7 @@ func (s ScooterRepository) GetAll() (*[]entities.Scooter, error) {
 
 func (s ScooterRepository) Create(scooter *entities.Scooter) (int, error) {
 	res, err := s.db.Exec(context.Background(),"INSERT INTO scooters (id, entities, brand, max_distance, capacity, max_weight) VALUES ($1, $2, $3, $4, $5, $6)",
-		0, &scooter.Model, &scooter.Brand, &scooter.MaxDistance, &scooter.Capacity, &scooter.MaxWeight)
+		0, &scooter.Id, &scooter.ModelId, &scooter.OwnerId, &scooter.SerialNumber)
 	if err != nil {
 		if err != nil {
 			return 0, err
@@ -117,3 +117,4 @@ func (s ScooterRepository) Delete(id int) (int, error) {
 	}
 	return int(rowsAffected), nil
 }
+*/

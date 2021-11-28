@@ -1,5 +1,6 @@
-package services
 
+package services
+/*
 import (
 	"Dp-218_Go/entities"
 	"Dp-218_Go/pkg/repository"
@@ -71,3 +72,5 @@ func (s ScooterService) DeleteScooter(scooterID int) (int, error) {
 	}
 	return rowsAffected, nil
 }
+
+ */
