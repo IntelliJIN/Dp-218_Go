@@ -7,7 +7,7 @@ type ScooterUploaded struct {
 	MaxWeight       int     `json,csv:"max_weight"`
 	PaymentType		int  	`json,scv:"payment_type"`
 	Speed 			int     `json,scv:"speed"`
-	SerialNumbers   []int   `json,scv:"serial_numbers"`
+//	SerialNumbers   []int   `json,scv:"serial_numbers"`
 }
 
 type Test struct {

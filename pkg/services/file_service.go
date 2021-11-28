@@ -1,14 +1,12 @@
 package services
 
 import (
-	"Dp-218_Go/entities"
 	"Dp-218_Go/pkg/repository"
 	"mime/multipart"
 )
 
 type FileServiceI interface {
 	InsertScootersToDb(file multipart.File) string
-	TestService(scooter *entities.Test) error
 }
 
 func NewFileService(fileRepository repository.FileRepositoryI) *FileService {
@@ -19,14 +17,6 @@ func NewFileService(fileRepository repository.FileRepositoryI) *FileService {
 
 type FileService struct {
 	fileRepository repository.FileRepositoryI
-}
-
-func (f FileService) TestService(scooter *entities.Test) error {
-	err:= f.fileRepository.Test(scooter)
-	if err != nil {
-		return err
-	}
-	return  err
 }
 
 func (f FileService)InsertScootersToDb(file multipart.File)string{

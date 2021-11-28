@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"Dp-218_Go/entities"
 	"Dp-218_Go/pkg/services"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -21,22 +19,6 @@ func NewFileHandler(fileService services.FileServiceI) *FileHandler {
 
 type FileHandlerI interface {
 	UploadFil(w http.ResponseWriter, r *http.Request)
-	Test(w http.ResponseWriter, r *http.Request)
-}
-
-func (f FileHandler) Test(w http.ResponseWriter, r *http.Request) {
-	var scooter entities.Test
-	err := json.NewDecoder(r.Body).Decode(&scooter)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
-		return
-	}
-	err = f.fileService.TestService(&scooter)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
 }
 
 func (f FileHandler)UploadFile(w http.ResponseWriter, r *http.Request){
