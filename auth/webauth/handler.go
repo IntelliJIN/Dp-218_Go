@@ -1,11 +1,14 @@
-package session
+package webauth
 
 import (
+	"Dp218Go/auth"
+	"Dp218Go/model"
+	"Dp218Go/repository"
 	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/ITA-Dnipro/Dp-218_Go/model"
+	"github.com/gorilla/sessions"
 )
 
 var (
@@ -13,11 +16,21 @@ var (
 	ErrSignIn = errors.New("signin error")
 )
 
+const sessionName = "login"
+
+type AuthService struct {
+	DB        repository.UserRepo
+	sessStore sessions.Store
+}
+
+func NewAuthService(db repository.UserRepo, store sessions.Store) *AuthService {
+	return &AuthService{
+		DB:        db,
+		sessStore: store,
+	}
+}
+
 func (sv *AuthService) SignUp(w http.ResponseWriter, r *http.Request) {
-	// TODO refactor
-	// if r.Method == "GET" {
-	// 	http.ServeFile(w, r, "./static/html/login-registration.html")
-	// }
 
 	// TODO implement validation
 	user := model.User{
@@ -26,22 +39,13 @@ func (sv *AuthService) SignUp(w http.ResponseWriter, r *http.Request) {
 		Password: r.FormValue("password"),
 	}
 
-	// // check if user already exists
-	// TODO change. for map
-	if u, err := sv.DB.GetByEmail(r.Context(), user.Email); err != nil {
-		fmt.Println(err)
-		if u != nil {
-			http.Error(w, fmt.Errorf("user exists").Error(), http.StatusForbidden)
-			return
-		}
-	}
-
-	err := user.HashPassword()
+	pass, err := auth.HashPassword(user.Password)
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, ErrSignUp.Error(), http.StatusInternalServerError)
 		return
 	}
+	user.Password = pass
 
 	_, err = sv.DB.Create(r.Context(), user)
 	if err != nil {
@@ -49,10 +53,7 @@ func (sv *AuthService) SignUp(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, ErrSignUp.Error(), http.StatusInternalServerError)
 		return
 	}
-	// nuser.Sanitize()
 
-	u, _ := sv.DB.GetByEmail(r.Context(), user.Email)
-	fmt.Println("signed up user: ", u)
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
@@ -67,7 +68,7 @@ func (sv *AuthService) SignIn(w http.ResponseWriter, r *http.Request) {
 		Email:    r.FormValue("email"),
 		Password: r.FormValue("password"),
 	}
-	fmt.Println(req)
+
 	// // check if user exists
 	user, err := sv.DB.GetByEmail(r.Context(), req.Email)
 	if err != nil {
@@ -76,7 +77,7 @@ func (sv *AuthService) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := user.CheckPassword(req.Password); err != nil {
+	if err := auth.CheckPassword(user.Password, req.Password); err != nil {
 		fmt.Println(err)
 		http.Error(w, ErrSignIn.Error(), http.StatusForbidden)
 		return
@@ -89,7 +90,7 @@ func (sv *AuthService) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session.Values["email"] = user.Email
+	session.Values["id"] = user.ID
 	err = session.Save(r, w)
 	if err != nil {
 		fmt.Println(err)
@@ -98,4 +99,41 @@ func (sv *AuthService) SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/main", http.StatusFound)
+}
+
+func (sv *AuthService) SignOut(w http.ResponseWriter, r *http.Request) {
+	session, err := sv.sessStore.Get(r, sessionName)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	session.Values["id"] = nil
+	session.Options.MaxAge = -1
+	err = session.Save(r, w)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/login", http.StatusFound)
+}
+
+func (sv *AuthService) SessMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		sess, err := sv.sessStore.Get(r, sessionName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if sess.IsNew {
+			http.Error(w, "not authorized", http.StatusForbidden)
+			return
+		}
+
+		next(w, r)
+	}
 }

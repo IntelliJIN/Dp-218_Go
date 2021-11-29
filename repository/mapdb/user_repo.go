@@ -1,10 +1,9 @@
 package mapdb
 
 import (
+	"Dp218Go/model"
 	"context"
 	"errors"
-
-	"github.com/ITA-Dnipro/Dp-218_Go/model"
 )
 
 type UserRepoMap struct {

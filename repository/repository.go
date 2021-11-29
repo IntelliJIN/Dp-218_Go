@@ -1,9 +1,8 @@
 package repository
 
 import (
+	"Dp218Go/model"
 	"context"
-
-	"github.com/ITA-Dnipro/Dp-218_Go/model"
 )
 
 type UserSpecification string
