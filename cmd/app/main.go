@@ -1,10 +1,11 @@
 package main
 
 import (
-	"Dp218Go/pkg/httpserver"
-	"Dp218Go/pkg/postgres"
-	repo "Dp218Go/repositories"
+	"Dp218Go/configs"
+	"Dp218Go/repositories/postgres"
 	"Dp218Go/routing"
+	"Dp218Go/routing/httpserver"
+	"Dp218Go/services"
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -12,43 +13,35 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 )
-
-var PG_HOST = os.Getenv("PG_HOST")
-var PG_PORT = os.Getenv("PG_PORT")
-var POSTGRES_DB = os.Getenv("POSTGRES_DB")
-var POSTGRES_USER = os.Getenv("POSTGRES_USER")
-var POSTGRES_PASSWORD = os.Getenv("POSTGRES_PASSWORD")
-var HTTP_PORT = os.Getenv("HTTP_PORT")
-var MIGRATE_DOWN, _ = strconv.ParseBool(os.Getenv("MIGRATE_DOWN"))
 
 func main() {
 
 	var connectionString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-		POSTGRES_USER,
-		POSTGRES_PASSWORD,
-		PG_HOST,
-		PG_PORT,
-		POSTGRES_DB)
+		configs.POSTGRES_USER,
+		configs.POSTGRES_PASSWORD,
+		configs.PG_HOST,
+		configs.PG_PORT,
+		configs.POSTGRES_DB)
 
-	pg, err := postgres.NewPostgres(connectionString)
+	db, err := postgres.NewConnection(connectionString)
 	if err != nil {
 		log.Fatalf("app - Run - postgres.New: %v", err)
 	}
-	defer pg.CloseDB()
+	defer db.CloseDB()
 
 	err = doMigrate(connectionString)
 	if err != nil {
 		log.Printf("app - Run - Migration issues: %v\n", err)
 	}
 
-	var userRepo = repo.New(pg)
+	var userRoleRepoDB = postgres.NewUserRepoDB(db)
+	var userService = services.NewUserService(userRoleRepoDB, userRoleRepoDB)
 
 	handler := routing.NewRouter()
-	routing.AddUserHandler(handler, userRepo)
-	httpServer := httpserver.New(handler, httpserver.Port(HTTP_PORT))
+	routing.AddUserHandler(handler, userService)
+	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
 
 
 	interrupt := make(chan os.Signal, 1)
@@ -68,14 +61,16 @@ func main() {
 }
 
 func doMigrate(connStr string) error {
-	migr, err := migrate.New("file:///home/Dp218Go/migrations", connStr + "?sslmode=disable")
+	migr, err := migrate.New("file://"+configs.MIGRATIONS_PATH, connStr + "?sslmode=disable")
 	if err!= nil{
 		return err
 	}
 
-	migr.Force(20211124)
+	if configs.MIGRATE_VERSION_FORCE>0 {
+		migr.Force(configs.MIGRATE_VERSION_FORCE)
+	}
 
-	if MIGRATE_DOWN {
+	if configs.MIGRATE_DOWN {
 		migr.Down()
 	}
 

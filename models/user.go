@@ -1,9 +1,20 @@
-package entities
+package models
 
 import (
-	"net/http"
 	"time"
 )
+
+type Role struct {
+	ID int `json:"id"`
+	Name       string `json:"name"`
+	IsAdmin    bool	`json:"is_admin"`
+	IsUser     bool	`json:"is_user"`
+	IsSupplier bool `json:"is_supplier"`
+}
+
+type RoleList struct {
+	Roles []Role `json:"roles"`
+}
 
 type User struct {
 	ID          int    `json:"id"`
@@ -12,21 +23,9 @@ type User struct {
 	UserName    string `json:"user_name"`
 	UserSurname string `json:"user_surname"`
 	CreatedAt   time.Time `json:"created_at"`
-	RoleID      int    `json:"role_id"`
+	Role      Role    `json:"role"`
 }
 
 type UserList struct {
 	Users []User `json:"users"`
-}
-
-func (u *User) Bind(r *http.Request) error {
-	return nil
-}
-
-func (*UserList) Render(w http.ResponseWriter, r *http.Request) error {
-	return nil
-}
-
-func (*User) Render(w http.ResponseWriter, r *http.Request) error {
-	return nil
 }

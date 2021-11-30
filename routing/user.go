@@ -1,164 +1,157 @@
 package routing
 
 import (
+	"Dp218Go/models"
+	"fmt"
 	"net/http"
 	"strconv"
 
-<<<<<<< Updated upstream
-	model "Dp218Go/domain/entities"
-	iface "Dp218Go/domain/interfaces"
-	repo "Dp218Go/repositories"
-
-	"github.com/go-chi/render"
-=======
 	"Dp218Go/services"
 
->>>>>>> Stashed changes
 	"github.com/gorilla/mux"
 )
 
-var	userRepo iface.UserRepo
+var userService *services.UserService
 var userIDKey = "userID"
 
 var keyRoutes = []Route{
 	{
-		Uri:         `/users`,
-		Method:    http.MethodGet,
-		Handler:	getAllUsers,
+		Uri:     `/users`,
+		Method:  http.MethodGet,
+		Handler: getAllUsers,
 	},
 	{
-		Uri:         `/user/{`+userIDKey+`}`,
-		Method:     http.MethodGet,
-		Handler:	getUser,
+		Uri:     `/users`,
+		Method:  http.MethodPost,
+		Handler: allUsersOperation,
 	},
 	{
-		Uri:         `/user`,
-		Method:     http.MethodPost,
-		Handler:	createUser,
+		Uri:     `/user/{` + userIDKey + `}`,
+		Method:  http.MethodGet,
+		Handler: getUser,
 	},
 	{
-		Uri:         `/user/{`+userIDKey+`}`,
-		Method:     http.MethodPut,
-		Handler:	updateUser,
+		Uri:     `/user`,
+		Method:  http.MethodPost,
+		Handler: createUser,
 	},
 	{
-		Uri:         `/user/{`+userIDKey+`}`,
-		Method:     http.MethodDelete,
-		Handler:	deleteUser,
+		Uri:     `/user/{` + userIDKey + `}`,
+		Method:  http.MethodPost,
+		Handler: updateUser,
+	},
+	{
+		Uri:     `/user/{` + userIDKey + `}`,
+		Method:  http.MethodDelete,
+		Handler: deleteUser,
 	},
 }
 
-func AddUserHandler(router *mux.Router, repo iface.UserRepo) {
-	userRepo = repo
-	for _, rt := range keyRoutes{
+type userWithRoleList struct {
+	models.User
+}
+
+func (ur *userWithRoleList) ListOfRoles() []models.Role {
+	roles, _ := userService.GetAllRoles()
+	return roles.Roles
+}
+
+func AddUserHandler(router *mux.Router, service *services.UserService) {
+	userService = service
+	for _, rt := range keyRoutes {
 		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+		router.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 	}
 }
 
 func createUser(w http.ResponseWriter, r *http.Request) {
-	user := &model.User{}
-	if err := render.Bind(r, user); err != nil {
-		render.Render(w, r, ErrBadRequest)
+	format := GetFormatFromRequest(r)
+
+	user := &models.User{}
+	DecodeRequest(FormatJSON, w, r, user, nil)
+
+	if err := userService.AddUser(user); err != nil {
+		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
-	if err := userRepo.AddUser(user); err != nil {
-		render.Render(w, r, ErrorRenderer(err))
-		return
-	}
-	if err := render.Render(w, r, user); err != nil {
-		render.Render(w, r, ServerErrorRenderer(err))
-		return
-	}
+
+	EncodeAnswer(FormatJSON, w, user)
 }
 
 func getAllUsers(w http.ResponseWriter, r *http.Request) {
-<<<<<<< Updated upstream
-	users, err := userRepo.GetAllUsers()
-=======
+
 	var users = &models.UserList{}
 	var err error
 	format := GetFormatFromRequest(r)
 
 	r.ParseForm()
 	searchData := r.FormValue("SearchData")
+
 	if len(searchData) == 0 {
 		users, err = userService.GetAllUsers()
 	} else {
 		users, err = userService.FindUsersByLoginNameSurname(searchData)
 	}
->>>>>>> Stashed changes
 	if err != nil {
-		render.Render(w, r, ServerErrorRenderer(err))
+		ServerErrorRender(format, w)
 		return
 	}
-	if err := render.Render(w, r, users); err != nil {
-		render.Render(w, r, ErrorRenderer(err))
-		return
-	}
+
+	EncodeAnswer(format, w, users, HTMLPath+"user-list.html")
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
+	format := GetFormatFromRequest(r)
+
 	userId, err := strconv.Atoi(mux.Vars(r)[userIDKey])
 	if err != nil {
-		render.Render(w, r, ErrorRenderer(err))
+		EncodeError(format, w, ErrorRendererDefault(err))
+		return
 	}
-	user, err := userRepo.GetUserById(userId)
+	user, err := userService.GetUserById(userId)
 	if err != nil {
-		if err == repo.ErrNoMatch {
-			render.Render(w, r, ErrNotFound)
-		} else {
-			render.Render(w, r, ErrorRenderer(err))
-		}
+		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
-	if err := render.Render(w, r, &user); err != nil {
-		render.Render(w, r, ServerErrorRenderer(err))
-		return
-	}
+
+	EncodeAnswer(format, w, &userWithRoleList{user}, HTMLPath+"user-edit.html")
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
+	format := GetFormatFromRequest(r)
+
 	userId, err := strconv.Atoi(mux.Vars(r)[userIDKey])
 	if err != nil {
-		render.Render(w, r, ErrorRenderer(err))
-	}
-	err = userRepo.DeleteUser(userId)
-	if err != nil {
-		if err == repo.ErrNoMatch {
-			render.Render(w, r, ErrNotFound)
-		} else {
-			render.Render(w, r, ServerErrorRenderer(err))
-		}
+		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
-	render.Render(w, r, StatusOK)
+	err = userService.DeleteUser(userId)
+	if err != nil {
+		ServerErrorRender(format, w)
+		return
+	}
+	EncodeAnswer(format, w, ErrorRenderer(fmt.Errorf(""), "success", http.StatusOK))
 }
 
 func updateUser(w http.ResponseWriter, r *http.Request) {
+	format := GetFormatFromRequest(r)
+
 	userId, err := strconv.Atoi(mux.Vars(r)[userIDKey])
 	if err != nil {
-		render.Render(w, r, ErrorRenderer(err))
-	}
-	userData := model.User{}
-	if err := render.Bind(r, &userData); err != nil {
-		render.Render(w, r, ErrBadRequest)
+		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
-	userData, err = userRepo.UpdateUser(userId, userData)
+	userData, err := userService.GetUserById(userId)
 	if err != nil {
-		if err == repo.ErrNoMatch {
-			render.Render(w, r, ErrNotFound)
-		} else {
-			render.Render(w, r, ServerErrorRenderer(err))
-		}
+		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
-<<<<<<< Updated upstream
-	if err := render.Render(w, r, &userData); err != nil {
-		render.Render(w, r, ServerErrorRenderer(err))
+	DecodeRequest(format, w, r, &userData, DecodeUserUpdateRequest)
+	userData, err = userService.UpdateUser(userId, userData)
+	if err != nil {
+		ServerErrorRender(format, w)
 		return
 	}
-=======
 
 	EncodeAnswer(format, w, &userWithRoleList{userData}, HTMLPath+"user-edit.html")
 }
@@ -167,7 +160,8 @@ func allUsersOperation(w http.ResponseWriter, r *http.Request) {
 	format := GetFormatFromRequest(r)
 
 	r.ParseForm()
-	if _, ok := r.Form["ActionType"]; !ok {
+	if _, ok := r.Form["ActionType"]; ok {
+
 		return
 	}
 	actionType := r.FormValue("ActionType")
@@ -207,6 +201,7 @@ func DecodeUserUpdateRequest(r *http.Request, data interface{}) error {
 		userData.UserSurname = r.FormValue("UserSurname")
 	}
 	if _, ok := r.Form["RoleID"]; ok {
+
 		var roleId int
 		roleId, err = strconv.Atoi(r.FormValue("RoleID"))
 		if err != nil {
@@ -223,5 +218,4 @@ func DecodeUserUpdateRequest(r *http.Request, data interface{}) error {
 
 	//reflect.ValueOf(data).Elem().Set(reflect.ValueOf(userData))
 	return nil
->>>>>>> Stashed changes
 }
