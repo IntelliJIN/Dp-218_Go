@@ -3,24 +3,21 @@ package entities
 import "time"
 
 type ScooterUploaded struct {
-	PaymentTypeId	int  	`json,scv:"payment_type_id"`
-	ModelName 	  	string  `json,csv:"model_name"`
-	MaxWeight       int     `json,csv:"max_weight"`
-	Speed 			int     `json,scv:"speed"`
-	OwnerId  	 	int		`json,scv:"owner_id"`
-	SerialNumber 	int		`json,scv:"serial_number"`
-}
-
-type Test struct {
-	Id		int		`json:"id"`
-	Model	string  `json:"model"`
+	Id 				  int    `json,scv:"id"`
+	ModelId 		  int    `json,scv:"model_id"`
+	OwnerId			  int 	 `json,scv:"owner_id"`
+	SerialNumber 	  string `json,scv:"serial_number"`
+	PaymentTypeId	  int 	 `json,scv:"name"`
+	ModelName         string `json,scv:"model_name"`
+	MaxWeight         int    `json,scv:"max_weight"`
+	Speed 			  int    `json,scv:"speed"`
 }
 
 type Scooter struct {
 	Id		 	 int	`json:"id"`
 	ModelId  	 int	`json:"model_id"`
 	OwnerId  	 int	`json:"owner_id"`
-	SerialNumber int	`json:"serial_number"`
+	SerialNumber string	`json:"serial_number"`
 }
 
 type ScooterModel struct {
@@ -51,4 +48,18 @@ type User struct {
 	Surname 	string  	`json:"user_surname"`
 	CreatedAt 	time.Time   `json:"created_at"`
 	RoleId 		int 		`json:"role_id"`
+}
+
+type Location struct {
+	Id			int  	`json:"id"`
+	Latitude	int  	`json:"latitude"`
+	Longitude	int	 	`json:"longitude"`
+	Label		string	`json:"label"`
+}
+
+type ScooterStation struct {
+	Id			int  	`json:"id"`
+	LocationId	int  	`json:"location_id"`
+	Name		string	 `json:"name"`
+	IsActive	bool	`json:"is_active"`
 }

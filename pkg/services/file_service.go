@@ -21,12 +21,9 @@ type FileService struct {
 
 func (f FileService)InsertScootersToDb(file multipart.File)string{
 	tempFilePath := f.fileRepository.CreateTempFile(file)
-	convertedStruct := f.fileRepository.ConvertToStruct(tempFilePath)
+	uploadModel := f.fileRepository.ConvertToStruct(tempFilePath)
 
-	err := f.fileRepository.InsertToDb(convertedStruct)
-	if err != nil {
-		return "Cant insert to DB"
-	}
+	f.fileRepository.InsertScooterData(uploadModel)
 
 	return tempFilePath
 }

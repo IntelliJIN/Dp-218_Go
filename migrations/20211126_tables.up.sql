@@ -15,9 +15,8 @@ CREATE TABLE IF NOT EXISTS users
     user_name    VARCHAR(100),
     user_surname VARCHAR(100),
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    role_id      int                 NOT NULL,
+    role_id      int                 NOT NULL
 
-    FOREIGN KEY (role_id) REFERENCES roles (id)
 );
 
 CREATE TABLE IF NOT EXISTS login_info
@@ -93,13 +92,11 @@ CREATE TABLE IF NOT EXISTS supplier_prices
 
 CREATE TABLE IF NOT EXISTS scooter_models
 (
-    id               smallserial PRIMARY KEY,
+    id               serial PRIMARY KEY,
     payment_type_id  smallint     NOT NULL,
     model_name       VARCHAR(100) NOT NULL,
     max_weight       NUMERIC(5, 2),
-    speed            smallint     NOT NULL,
-
-    FOREIGN KEY (payment_type_id) REFERENCES payment_types (id)
+    speed            smallint     NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS scooters
@@ -107,10 +104,7 @@ CREATE TABLE IF NOT EXISTS scooters
     id            serial PRIMARY KEY,
     model_id      smallint            NOT NULL,
     owner_id      int                 NOT NULL,
-    serial_number VARCHAR(100) UNIQUE NOT NULL,
-
-    FOREIGN KEY (model_id) REFERENCES scooter_models (id),
-    FOREIGN KEY (owner_id) REFERENCES users (id)
+    serial_number VARCHAR(100) UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS locations

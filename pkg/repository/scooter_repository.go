@@ -1,9 +1,8 @@
-
 package repository
-/*
+
 import (
-	"context"
 	"Dp-218_Go/entities"
+	"context"
 	"github.com/jackc/pgx/v4"
 	_ "github.com/lib/pq"
 )
@@ -19,11 +18,85 @@ func NewScooterRepository(db *pgx.Conn) *ScooterRepository {
 }
 
 type ScooterRepositoryI interface {
+	ShowScooterStation() (*[]entities.ScooterStation, error)
 	Create(scooter *entities.Scooter) (int, error)
 	GetAll() (*[]entities.Scooter, error)
-	GetByID(id int) (*entities.Scooter, error)
-	Update(scooter *entities.ScooterModel) (int, error)
+	Update(scooter *entities.Scooter) (int, error)
 	Delete(id int) (int, error)
+	GetModelById(modelId int) (*entities.ScooterModel, error)
+	GetOwnerIdByName(userName string) (*int, error)
+	GetPaymentTypeIdByName(PaymentType string) (*int, error)
+	GetScooterByModelName(modelName string) (*[]entities.Scooter, error)
+	GetScooterByID(id int) (*entities.Scooter, error)
+}
+
+func (s ScooterRepository) ShowScooterStation() (*[]entities.ScooterStation, error){
+	var stations []entities.ScooterStation
+	rows, err := s.db.Query(context.Background(),"SELECT * FROM scooter_stations")
+
+	if err != nil {
+		return nil, err
+	}
+	station := entities.ScooterStation{}
+	for rows.Next() {
+		err = rows.Scan(&station.Id, &station.Name, &station.LocationId, &station.IsActive)
+		if err != nil {
+			return nil, err
+		}
+		stations = append(stations, station)
+	}
+	return &stations, nil
+}
+
+func (s ScooterRepository) GetModelById(modelId int) (*entities.ScooterModel, error) {
+	var scooterModel entities.ScooterModel
+	rows, err := s.db.Query(context.Background(),"SELECT * FROM scooter_models  WHERE id=$1", modelId)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		err = rows.Scan(&scooterModel.Id, &scooterModel.PaymentTypeId, &scooterModel.ModelName, &scooterModel.MaxWeight, &scooterModel.Speed)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &scooterModel, nil
+}
+
+func (s ScooterRepository) GetOwnerIdByName(userName string) (*int, error) {
+	var user entities.User
+	rows, err := s.db.Query(context.Background(),"SELECT id FROM user WHERE name=$1", userName)
+	if err != nil {
+		panic(err)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(&user.Id)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return &user.Id, nil
+}
+
+func (s ScooterRepository) GetPaymentTypeIdByName(PaymentType string) (*int, error) {
+	var paymentType entities.PaymentType
+	rows, err := s.db.Query(context.Background(),"SELECT id FROM payment_types WHERE name=$1", PaymentType)
+	if err != nil {
+		panic(err)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(&paymentType.Id)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return &paymentType.Id, nil
 }
 
 func (s ScooterRepository) GetAll() (*[]entities.Scooter, error) {
@@ -41,7 +114,6 @@ func (s ScooterRepository) GetAll() (*[]entities.Scooter, error) {
 		}
 		scooters = append(scooters, scooter)
 	}
-
 	return &scooters, nil
 }
 
@@ -63,30 +135,34 @@ func (s ScooterRepository) Create(scooter *entities.Scooter) (int, error) {
 	return int(lastID), nil
 }
 
-func (s ScooterRepository) GetByBrand(brand string) (*entities.Scooter, error) {
-	scooter := entities.Scooter{}
-	rows, err := s.db.Query(context.Background(), "SELECT * FROM scooters WHERE brand=$1", brand)
-	if err != nil {
-		return nil, err
-	}
+func (s ScooterRepository) GetScooterByModelName(modelName string) (*[]entities.Scooter, error) {
+	var scooterModel entities.ScooterModel
+	var scooters []entities.Scooter
+	row := s.db.QueryRow(context.Background(), "SELECT id FROM scooter_models WHERE model_name=$1", modelName )
+
+	_ = row.Scan(&scooterModel.Id)
+
+	var scooter entities.Scooter
+	rows, err := s.db.Query(context.Background(), "SELECT * FROM scooters WHERE model_id=$1", &scooterModel.Id)
 	for rows.Next() {
-		err = rows.Scan(&scooter.Model, &scooter.Brand, &scooter.MaxDistance, &scooter.Capacity, &scooter.MaxWeight)
+		err = rows.Scan(&scooter.Id, &scooter.ModelId, &scooter.OwnerId, &scooter.SerialNumber)
 		if err != nil {
 			return nil, err
 		}
+		scooters = append(scooters, scooter)
 	}
 
-	return &scooter, nil
+	return &scooters, nil
 }
 
-func (s ScooterRepository) GetByID(id int) (*entities.Scooter, error) {
+func (s ScooterRepository) GetScooterByID(id int) (*entities.Scooter, error) {
 	scooter := entities.Scooter{}
-	rows, err := s.db.Query(context.Background(), "SELECT * FROM users WHERE id=$1", id)
+	rows, err := s.db.Query(context.Background(), "SELECT * FROM scooters WHERE id=$1", id)
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		err = rows.Scan(&scooter.Id, &scooter.Model, &scooter.Brand, &scooter.MaxDistance, &scooter.Capacity, &scooter.MaxWeight)
+		err = rows.Scan(&scooter.Id, &scooter.OwnerId, &scooter.ModelId, &scooter.SerialNumber)
 		if err != nil {
 			return nil, err
 		}
@@ -96,8 +172,8 @@ func (s ScooterRepository) GetByID(id int) (*entities.Scooter, error) {
 }
 
 func (s ScooterRepository) Update(scooter *entities.Scooter) (int, error) {
-	res, err := s.db.Exec(context.Background(), "UPDATE scooters SET entities=$1, barnd=$2,max_distance=$3 capacity=$4,max_weight=$5 WHERE id=$6",
-		&scooter.Model, &scooter.Brand, &scooter.MaxDistance, &scooter.Capacity, &scooter.MaxWeight, &scooter.Id)
+	res, err := s.db.Exec(context.Background(), "UPDATE scooters SET serial_number=$1 WHERE id=$2",
+		&scooter.SerialNumber, &scooter.Id)
 	if err != nil {
 		return 0, err
 	}
@@ -117,4 +193,3 @@ func (s ScooterRepository) Delete(id int) (int, error) {
 	}
 	return int(rowsAffected), nil
 }
-*/

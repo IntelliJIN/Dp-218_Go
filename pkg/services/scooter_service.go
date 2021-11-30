@@ -1,16 +1,16 @@
-
 package services
-/*
+
 import (
 	"Dp-218_Go/entities"
 	"Dp-218_Go/pkg/repository"
 )
 
 type ScooterServiceI interface {
+	ShowScooterStation()(*[]entities.ScooterStation, error)
 	CreateScooter(scooter *entities.Scooter) (int, error)
 	GetScooters() (*[]entities.Scooter, error)
 	GetScooterByID(scooterID int) (*entities.Scooter, error)
-	GetScootersByBrand(brand string) (*entities.Scooter, error)
+	GetScooterByModelName(modelName string) (*[]entities.Scooter, error)
 	EditScooter(scooter *entities.Scooter) (int, error)
 	DeleteScooter(id int) (int, error)
 }
@@ -23,6 +23,14 @@ func NewScooterService(scooterRepository repository.ScooterRepositoryI) *Scooter
 
 type ScooterService struct {
 	scooterRepository repository.ScooterRepositoryI
+}
+
+func (s ScooterService) ShowScooterStation() (*[]entities.ScooterStation, error) {
+	stations, err := s.scooterRepository.ShowScooterStation()
+	if err != nil {
+		return nil, err
+	}
+	return stations, nil
 }
 
 func (s ScooterService) GetScooters() (*[]entities.Scooter, error) {
@@ -42,15 +50,15 @@ func (s ScooterService) CreateScooter(scooter *entities.Scooter) (int, error) {
 }
 
 func (s ScooterService) GetScooterByID(scooterID int) (*entities.Scooter, error) {
-	scooter, err := s.scooterRepository.GetByID(scooterID)
+	scooter, err := s.scooterRepository.GetScooterByID(scooterID)
 	if err != nil {
 		return nil, err
 	}
 	return scooter, nil
 }
 
-func (s ScooterService) GetScootersByBrand(brand string) (*entities.Scooter, error) {
-	scooter, err := s.scooterRepository.GetByBrand(brand)
+func (s ScooterService) GetScooterByModelName(modelName string) (*[]entities.Scooter, error) {
+	scooter, err := s.scooterRepository.GetScooterByModelName(modelName)
 	if err != nil {
 		return nil, err
 	}
@@ -72,5 +80,3 @@ func (s ScooterService) DeleteScooter(scooterID int) (int, error) {
 	}
 	return rowsAffected, nil
 }
-
- */

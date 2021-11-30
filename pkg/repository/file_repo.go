@@ -25,19 +25,20 @@ func NewFileRepository(db *pgx.Conn) *FileRepository {
 }
 
 type FileRepositoryI interface {
-	InsertToDb(scooters []entities.ScooterUploaded) error
 	CreateTempFile(file multipart.File)string
 	ConvertToStruct(path string)[]entities.ScooterUploaded
+	GetMyId(miUserName string) (int, error)
+	InsertScooterModelData(scooters []entities.ScooterUploaded)error
+	InsertScooterData(scooters []entities.ScooterUploaded)error
 }
-
 
 func (f FileRepository) CreateTempFile(file multipart.File)string{
 	fileBytes, err := ioutil.ReadAll(file)
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	tempFile, err := ioutil.TempFile("./../internal/temp_files", "upload-*.сsv")
+//	"./../internal/temp_files"
+	tempFile, err := ioutil.TempFile("./../../internal/temp_files", "upload-*.сsv")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -54,32 +55,70 @@ func (f FileRepository) ConvertToStruct(path string)[]entities.ScooterUploaded {
 	scooterHeader, _ := csvutil.Header(entities.ScooterUploaded{}, "csv")
 	dec, _ := csvutil.NewDecoder(reader, scooterHeader...)
 
-	var scooters []entities.ScooterUploaded
+	var fileData []entities.ScooterUploaded
 	for {
 		var s entities.ScooterUploaded
 		if err := dec.Decode(&s); err == io.EOF {
 			break
 		}
-		scooters = append(scooters, s)
+		fileData = append(fileData, s)
 	}
-	return scooters
+	return fileData
 }
 
-func (f FileRepository) InsertScooterModelData(scooters []entities.ScooterUploaded) error {
-	valueStrings := make([]string, 0, len(scooters))
-	valueArgs := make([]interface{}, 0, len(scooters) * 4)
-	for i, scooter := range scooters {
-		valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d", i*4+1, i*4+2, i*4+3, i*4+4))
-		valueArgs = append(valueArgs, scooter.PaymentTypeId)
-		valueArgs = append(valueArgs, scooter.ModelName)
-		valueArgs = append(valueArgs, scooter.MaxWeight)
-		valueArgs = append(valueArgs, scooter.Speed)
+
+func (f FileRepository)GetMyId(miUserName string) (int, error) {
+	var userId int
+	rows, err := f.db.Query(context.Background(),"SELECT id FROM users WHERE name=$1 ", miUserName)
+	if err != nil {
+		panic(err)
 	}
-	stmt := fmt.Sprintf("INSERT INTO scooter_models(payment_type_id, model_name, max_weight, speed) VALUES %s", strings.Join(valueStrings, ","))
-	if _, err := f.db.Exec(context.Background(),stmt, valueArgs...)
+	for rows.Next() {
+		err = rows.Scan(&userId)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	return userId, nil
+}
+
+func (f FileRepository) InsertScooterModelData(scooterModels []entities.ScooterUploaded)error{
+	valueStrings := make([]string, 0, len(scooterModels))
+	model := make([]interface{}, 0, len(scooterModels) * 4)
+
+	for i, scooterModel := range scooterModels {
+		valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d)", i*4+1, i*4+2, i*4+3, i*4+4))
+		model = append(model, scooterModel.PaymentTypeId)
+		model = append(model, scooterModel.ModelName)
+		model = append(model, scooterModel.MaxWeight)
+		model = append(model, scooterModel.Speed)
+	}
+
+	stmt := fmt.Sprintf("INSERT INTO scooter_models (payment_type_id, model_name, max_weight, speed) VALUES %s ON CONFLICT (model_name) DO NOTHING;", strings.Join(valueStrings, ","))
+	if _, err := f.db.Exec(context.Background(),stmt, model...)
 		err != nil {
 		fmt.Println("Unable to insert due to: ", err)
 		return err
 	}
+	return nil
+}
+
+func (f FileRepository) InsertScooterData(scooters []entities.ScooterUploaded)error{
+	valueStrings := make([]string, 0, len(scooters))
+	scooterInfo := make([]interface{}, 0, len(scooters) * 3)
+
+		for i, scooter := range scooters {
+			valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d)", i*3+1, i*3+2, i*3+3))
+			scooterInfo = append(scooterInfo, scooter.ModelId)
+			scooterInfo = append(scooterInfo, scooter.OwnerId)
+			scooterInfo = append(scooterInfo, scooter.SerialNumber)
+		}
+
+		stmt1 := fmt.Sprintf("INSERT INTO scooters (model_id, owner_id, serial_number) VALUES %s ON CONFLICT (serial_number) DO NOTHING;", strings.Join(valueStrings, ","))
+		if _, err := f.db.Exec(context.Background(),stmt1, scooterInfo...)
+			err != nil {
+			fmt.Println("Unable to insert due to: ", err)
+		}
 	return nil
 }
