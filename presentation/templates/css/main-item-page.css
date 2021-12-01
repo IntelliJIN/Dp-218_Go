@@ -15,7 +15,8 @@
     height: auto;
 }
 
-.overlay-container {
+
+.overlayItem-container {
     position: absolute;
     top: 0;
     left: 70%;
@@ -26,6 +27,19 @@
 
     background: linear-gradient(to right, #545454, #418c77);
 }
+
+.overlayItem-panel {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    top: 0;
+    height: 100%;
+    width: 75%;
+}
+
 
 .item-container {
     background-color: #FFFFFF;
@@ -39,34 +53,10 @@
     min-height: 600px;
 }
 
-.form-container {
-    position: absolute;
-    top: 0;
-    height: 100%;
-    transition: all 0.6s ease-in-out;
-}
-
 .product-container {
     left: 0;
     width: 70%;
     z-index: 1;
-}
-
-.form-container {
-    top: 0;
-    height: 100%;
-}
-
-.overlay-panel {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    text-align: center;
-    top: 0;
-    height: 100%;
-    width: 75%;
 }
 
 button.ghost {
