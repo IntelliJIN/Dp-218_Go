@@ -17,10 +17,9 @@ import (
 	"time"
 )
 
-func Run()error{
-	cfg := configs.Get()
-	pgDB :=  pgdb.Dial(cfg)
+func Run(cfg *configs.Config)error{
 
+	pgDB :=  pgdb.Dial(cfg)
 	fileRepository := repository.NewFileRepository(pgDB)
 	fileService := services.NewFileService(fileRepository)
 	fileHandler := handlers.NewFileHandler(fileService)

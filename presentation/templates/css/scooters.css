@@ -20,7 +20,7 @@
 }
 
 .custom-table tbody td .details {
-    color: #777;
+    color: #ffffff;
     font-size: 11px;
     font-weight: 900;
     text-transform: uppercase;
@@ -28,7 +28,7 @@
 }
 
 .custom-table tbody tr:hover td .details {
-    color: #cf3301;
+    color: #467174;
 }
 
 .scooter-btn {

@@ -2,17 +2,17 @@ package repository
 
 import (
 	"Dp-218_Go/entities"
+	"Dp-218_Go/pgdb"
 	"context"
-	"github.com/jackc/pgx/v4"
 	_ "github.com/lib/pq"
 )
 
 type ScooterRepository struct {
-	db *pgx.Conn
+	db *pgdb.PgDB
 }
 
 
-func NewScooterRepository(db *pgx.Conn) *ScooterRepository {
+func NewScooterRepository(db *pgdb.PgDB) *ScooterRepository {
 	return &ScooterRepository{
 		db: db,
 	}

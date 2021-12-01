@@ -1,15 +1,19 @@
 package pgdb
 
 import (
-	"context"
 	"Dp-218_Go/configs"
+	"context"
 	"fmt"
 	"github.com/jackc/pgx/v4"
 	_ "github.com/lib/pq"
 	"os"
 )
 
-func Dial(cfg *configs.Config)*pgx.Conn {
+type PgDB struct {
+	 *pgx.Conn
+}
+
+func Dial(cfg *configs.Config)*PgDB {
 	var err error
 	if cfg.DriverName == "" {
 		return nil
@@ -24,5 +28,5 @@ func Dial(cfg *configs.Config)*pgx.Conn {
 	}
 	fmt.Println("Successfully connected!")
 
-	return conn
+	return &PgDB{conn}
 }

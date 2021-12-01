@@ -6,6 +6,7 @@ import (
 	"github.com/joho/godotenv"
 	"log"
 	"os"
+	"regexp"
 )
 
 type Config struct {
@@ -16,12 +17,23 @@ type Config struct {
 	DbHost    				string
 	DbPort    				string
 }
+const projectDirName = "Dp-218_Go"
+
+func loadEnv() {
+	projectName := regexp.MustCompile(`^(.*` + projectDirName + `)`)
+	currentWorkDirectory, _ := os.Getwd()
+	rootPath := projectName.Find([]byte(currentWorkDirectory))
+
+	err := godotenv.Load(string(rootPath) + `/configs/.env`)
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+}
 
 func Get() *Config {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println(err)
-	}
+	loadEnv()
+
 	config := Config {
 			DbUser:     os.Getenv("POSTGRES_USER"),
 			DbPassword: os.Getenv("POSTGRES_PASSWORD"),

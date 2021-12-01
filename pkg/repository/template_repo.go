@@ -2,10 +2,10 @@ package repository
 
 import (
 	"Dp-218_Go/entities"
+	"Dp-218_Go/pgdb"
 	"context"
 	"encoding/csv"
 	"fmt"
-	"github.com/jackc/pgx/v4"
 	"github.com/jszwec/csvutil"
 	"io"
 	"io/ioutil"
@@ -15,10 +15,10 @@ import (
 )
 
 type FileRepository struct {
-	db *pgx.Conn
+	db *pgdb.PgDB
 }
 
-func NewFileRepository(db *pgx.Conn) *FileRepository {
+func NewFileRepository(db *pgdb.PgDB) *FileRepository {
 	return &FileRepository{
 		db: db,
 	}
