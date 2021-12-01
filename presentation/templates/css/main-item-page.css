@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+
+.img-part {
+    height: 70%;
+    overflow: hidden;
+}
+
+.img-desc {
+    font-family: 'Montserrat', sans-serif;
+    margin: 3px 10px 3px;
+}
+
+.img-f {
+    max-width: 100%;
+    height: auto;
+}
+
+.overlay-container {
+    position: absolute;
+    top: 0;
+    left: 70%;
+    width: 40%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 5;
+
+    background: linear-gradient(to right, #545454, #418c77);
+}
+
+.item-container {
+    background-color: #FFFFFF;
+    border-radius: 10px;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
+    0 10px 10px rgba(0, 0, 0, 0.22);
+    position: relative;
+    overflow: hidden;
+    width: 950px;
+    max-width: 100%;
+    min-height: 600px;
+}
+
+.form-container {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    transition: all 0.6s ease-in-out;
+}
+
+.product-container {
+    left: 0;
+    width: 70%;
+    z-index: 1;
+}
+
+.form-container {
+    top: 0;
+    height: 100%;
+}
+
+.overlay-panel {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    top: 0;
+    height: 100%;
+    width: 75%;
+}
+
+button.ghost {
+    background-color: transparent;
+    border-color: #FFFFFF;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+.bt {
+    border-radius: 20px;
+    border: 1px solid #000000;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 12px 45px;
+    letter-spacing: 1px;
+    transition: transform 80ms ease-in;
+}
+
+
+.services .icon-box {
+    text-align: center;
+    transition: all ease-in-out 0.3s;
+    border-radius: 10px;
+}
+
+.img-fluid {
+    border-radius: 10px;
+}
+
+.services .icon-box h4 {
+    font-weight: 700;
+    margin-bottom: 15px;
+    font-size: 24px;
+}
+
+.services .icon-box a {
+    color: #000000;
+}
+
+.services .icon-box p {
+    line-height: 24px;
+    font-size: 14px;
+    margin-bottom: 5px;
+
+}
+
+.services .icon-box:hover,
+.services .icon:hover {
+    background-color: rgba(90, 155, 134, 0.89);
+    border-color: #14d2bd;
+    border-radius: 10px;
+    box-shadow: 0 0 25px 0 rgba(0, 0, 0, 0.5);
+    transform: translateY(-10px);
+}
