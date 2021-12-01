@@ -42,15 +42,15 @@ func Run()error{
 	r.HandleFunc("/getScooters", scooterHandler.GetScooters).Methods("GET")
 	r.HandleFunc("/getScooter/{id}", scooterHandler.GetScooterById).Methods("GET")
 	r.HandleFunc("/getScooter/{modelName}", scooterHandler.GetScooterByModelName).Methods("GET")
-	r.HandleFunc("/updateSerial", scooterHandler.UpdateScooterSerial).Methods("PUT")
+	r.HandleFunc("/updateSerial/{id}", scooterHandler.UpdateScooterSerial).Methods("PUT")
 	r.HandleFunc("/deleteScooter/{id}", scooterHandler.DeleteScooter).Methods("DELETE")
-	r.HandleFunc("/getScooterByModelId", scooterHandler.GetScooterByModelId).Methods("GET")
+	r.HandleFunc("/getScooterByModelId/{id}", scooterHandler.GetScooterByModelId).Methods("GET")
 
 	r.HandleFunc("/createModel", scooterModelHandler.CreateScooterModel).Methods("POST")
 	r.HandleFunc("/getModels", scooterModelHandler.GetScooterModels).Methods("GET")
 	r.HandleFunc("/getModel/{id}", scooterModelHandler.GetScooterModelByID).Methods("GET")
-	r.HandleFunc("/editModel", scooterModelHandler.EditScooterModel).Methods("PUT")
-	r.HandleFunc("/deleteModel", scooterModelHandler.DeleteScooterModel).Methods("DELETE")
+	r.HandleFunc("/editModel/{id}", scooterModelHandler.EditScooterModel).Methods("PUT")
+	r.HandleFunc("/deleteModel/{id}", scooterModelHandler.DeleteScooterModel).Methods("DELETE")
 
 	err := r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		pathTemplate, err := route.GetPathTemplate()
