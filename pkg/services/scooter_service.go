@@ -6,13 +6,13 @@ import (
 )
 
 type ScooterServiceI interface {
-	ShowScooterStation()(*[]entities.ScooterStation, error)
 	CreateScooter(scooter *entities.Scooter) (int, error)
 	GetScooters() (*[]entities.Scooter, error)
-	GetScooterByID(scooterID int) (*entities.Scooter, error)
-	GetScooterByModelName(modelName string) (*[]entities.Scooter, error)
-	EditScooter(scooter *entities.Scooter) (int, error)
+	UpdateScooterSerial(scooter *entities.Scooter) (int, error)
 	DeleteScooter(id int) (int, error)
+	GetScooterByModelId(ide int) (*[]entities.Scooter, error)
+	GetScooterByModelName(name string) (*[]entities.Scooter, error)
+	GetScooterByID(scooterID int) (*entities.Scooter, error)
 }
 
 func NewScooterService(scooterRepository repository.ScooterRepositoryI) *ScooterService {
@@ -25,32 +25,40 @@ type ScooterService struct {
 	scooterRepository repository.ScooterRepositoryI
 }
 
-func (s ScooterService) ShowScooterStation() (*[]entities.ScooterStation, error) {
-	stations, err := s.scooterRepository.ShowScooterStation()
-	if err != nil {
-		return nil, err
-	}
-	return stations, nil
-}
-
-func (s ScooterService) GetScooters() (*[]entities.Scooter, error) {
-	scooters, err := s.scooterRepository.GetAll()
-	if err != nil {
-		return nil, err
-	}
-	return scooters, nil
-}
-
 func (s ScooterService) CreateScooter(scooter *entities.Scooter) (int, error) {
-	lastID, err := s.scooterRepository.Create(scooter)
+	lastID, err := s.scooterRepository.CreateScooter(scooter)
 	if err != nil {
 		return 0, err
 	}
 	return lastID, nil
 }
 
-func (s ScooterService) GetScooterByID(scooterID int) (*entities.Scooter, error) {
-	scooter, err := s.scooterRepository.GetScooterByID(scooterID)
+func (s ScooterService) GetScooters() (*[]entities.Scooter, error) {
+	scooters, err := s.scooterRepository.GetAllScooters()
+	if err != nil {
+		return nil, err
+	}
+	return scooters, nil
+}
+
+func (s ScooterService) UpdateScooterSerial(scooter *entities.Scooter) (int, error) {
+	rowsAffected, err := s.scooterRepository.UpdateScooterSerial(scooter)
+	if err != nil {
+		return 0, err
+	}
+	return rowsAffected, nil
+}
+
+func (s ScooterService) DeleteScooter(scooterID int) (int, error) {
+	rowsAffected, err := s.scooterRepository.DeleteScooter(scooterID)
+	if err != nil {
+		return 0, err
+	}
+	return rowsAffected, nil
+}
+
+func (s ScooterService) GetScooterByModelId(id int) (*[]entities.Scooter, error) {
+	scooter, err := s.scooterRepository.GetScooterByModelId(id)
 	if err != nil {
 		return nil, err
 	}
@@ -65,18 +73,23 @@ func (s ScooterService) GetScooterByModelName(modelName string) (*[]entities.Sco
 	return scooter, nil
 }
 
-func (s ScooterService) EditScooter(scooter *entities.Scooter) (int, error) {
-	rowsAffected, err := s.scooterRepository.Update(scooter)
+func (s ScooterService) GetScooterByID(scooterID int) (*entities.Scooter, error) {
+	scooter, err := s.scooterRepository.GetScooterByID(scooterID)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return rowsAffected, nil
+	return scooter, nil
 }
 
-func (s ScooterService) DeleteScooter(scooterID int) (int, error) {
-	rowsAffected, err := s.scooterRepository.Delete(scooterID)
-	if err != nil {
-		return 0, err
-	}
-	return rowsAffected, nil
-}
+
+
+
+
+
+
+
+
+
+
+
+

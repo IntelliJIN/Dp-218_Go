@@ -27,7 +27,6 @@ func NewFileRepository(db *pgx.Conn) *FileRepository {
 type FileRepositoryI interface {
 	CreateTempFile(file multipart.File)string
 	ConvertToStruct(path string)[]entities.ScooterUploaded
-	GetMyId(miUserName string) (int, error)
 	InsertScooterModelData(scooters []entities.ScooterUploaded)error
 	InsertScooterData(scooters []entities.ScooterUploaded)error
 }
@@ -37,7 +36,6 @@ func (f FileRepository) CreateTempFile(file multipart.File)string{
 	if err != nil {
 		fmt.Println(err)
 	}
-//	"./../internal/temp_files"
 	tempFile, err := ioutil.TempFile("./../../internal/temp_files", "upload-*.сsv")
 	if err != nil {
 		fmt.Println(err)
@@ -64,23 +62,6 @@ func (f FileRepository) ConvertToStruct(path string)[]entities.ScooterUploaded {
 		fileData = append(fileData, s)
 	}
 	return fileData
-}
-
-
-func (f FileRepository)GetMyId(miUserName string) (int, error) {
-	var userId int
-	rows, err := f.db.Query(context.Background(),"SELECT id FROM users WHERE name=$1 ", miUserName)
-	if err != nil {
-		panic(err)
-	}
-	for rows.Next() {
-		err = rows.Scan(&userId)
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	return userId, nil
 }
 
 func (f FileRepository) InsertScooterModelData(scooterModels []entities.ScooterUploaded)error{
@@ -122,3 +103,4 @@ func (f FileRepository) InsertScooterData(scooters []entities.ScooterUploaded)er
 		}
 	return nil
 }
+
