@@ -160,7 +160,7 @@ func allUsersOperation(w http.ResponseWriter, r *http.Request) {
 	format := GetFormatFromRequest(r)
 
 	r.ParseForm()
-	if _, ok := r.Form["ActionType"]; ok {
+	if _, ok := r.Form["ActionType"]; !ok {
 
 		return
 	}
