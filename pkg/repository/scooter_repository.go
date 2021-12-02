@@ -11,7 +11,6 @@ type ScooterRepository struct {
 	db *pgdb.PgDB
 }
 
-
 func NewScooterRepository(db *pgdb.PgDB) *ScooterRepository {
 	return &ScooterRepository{
 		db: db,
