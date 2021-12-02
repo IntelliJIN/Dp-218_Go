@@ -46,7 +46,7 @@ func Run(cfg *configs.Config)error{
 	r.HandleFunc("/getScooterByModelId/{id}", scooterHandler.GetScooterByModelId).Methods("GET")
 
 	r.HandleFunc("/createModel", scooterModelHandler.CreateScooterModel).Methods("POST")
-	r.HandleFunc("/getModels", scooterModelHandler.GetScooterModels)
+	r.HandleFunc("/getModels", scooterModelHandler.GetScooterModels).Methods("GET")
 	r.HandleFunc("/getModel/{id}", scooterModelHandler.GetScooterModelByID).Methods("GET")
 	r.HandleFunc("/editModel/{id}", scooterModelHandler.EditScooterModel).Methods("PUT")
 	r.HandleFunc("/deleteModel/{id}", scooterModelHandler.DeleteScooterModel).Methods("DELETE")
