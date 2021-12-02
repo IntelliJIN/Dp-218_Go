@@ -46,33 +46,32 @@ func Run(cfg *configs.Config)error{
 	r.HandleFunc("/getScooterByModelId/{id}", scooterHandler.GetScooterByModelId).Methods("GET")
 
 	r.HandleFunc("/createModel", scooterModelHandler.CreateScooterModel).Methods("POST")
-	r.HandleFunc("/getModels", scooterModelHandler.GetScooterModels).Methods("GET")
+	r.HandleFunc("/getModels", scooterModelHandler.GetScooterModels)
 	r.HandleFunc("/getModel/{id}", scooterModelHandler.GetScooterModelByID).Methods("GET")
 	r.HandleFunc("/editModel/{id}", scooterModelHandler.EditScooterModel).Methods("PUT")
 	r.HandleFunc("/deleteModel/{id}", scooterModelHandler.DeleteScooterModel).Methods("DELETE")
 
 	err := r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		pathTemplate, err := route.GetPathTemplate()
-		if err == nil {
+		if err != nil {
 			fmt.Println("ROUTE:", pathTemplate)
 		}
 		pathRegexp, err := route.GetPathRegexp()
-		if err == nil {
+		if err != nil {
 			fmt.Println("Path regexp:", pathRegexp)
 		}
 		queriesTemplates, err := route.GetQueriesTemplates()
-		if err == nil {
+		if err != nil {
 			fmt.Println("Queries templates:", strings.Join(queriesTemplates, ","))
 		}
 		queriesRegexps, err := route.GetQueriesRegexp()
-		if err == nil {
+		if err != nil {
 			fmt.Println("Queries regexps:", strings.Join(queriesRegexps, ","))
 		}
 		methods, err := route.GetMethods()
-		if err == nil {
+		if err != nil {
 			fmt.Println("Methods:", strings.Join(methods, ","))
 		}
-		fmt.Println()
 		return nil
 	})
 

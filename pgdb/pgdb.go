@@ -13,6 +13,7 @@ type PgDB struct {
 	 *pgx.Conn
 }
 
+
 func Dial(cfg *configs.Config)*PgDB {
 	var err error
 	if cfg.DriverName == "" {

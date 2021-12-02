@@ -23,8 +23,8 @@ func (f FileService)InsertScootersToDb(file multipart.File)string{
 	tempFilePath := f.fileRepository.CreateTempFile(file)
 	uploadModel := f.fileRepository.ConvertToStruct(tempFilePath)
 
-	f.fileRepository.InsertScooterData(uploadModel)
 	f.fileRepository.InsertScooterModelData(uploadModel)
+	f.fileRepository.InsertScooterData(uploadModel)
 
 	return tempFilePath
 }

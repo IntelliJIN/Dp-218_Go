@@ -6,11 +6,11 @@ import (
 )
 
 type ScooterModelServiceI interface {
-	CreateScooterModel(scooterModel *entities.ScooterModel) (int, error)
+	CreateScooterModel(scooterModel *entities.ScooterModel)
 	GetScooterModels() (*[]entities.ScooterModel, error)
 	GetScooterModelByID(modelID int) (*entities.ScooterModel, error)
 	EditScooterModel(model *entities.ScooterModel) (int, error)
-	DeleteScooterModel(id int) (int, error)
+	DeleteScooterModel(id int) error
 }
 
 func NewScooterModelService(scooterModelRepository repository.ScooterModelRepositoryI) *ScooterModelService {
@@ -23,12 +23,8 @@ type ScooterModelService struct {
 	scooterModelRepository repository.ScooterModelRepositoryI
 }
 
-func (sm ScooterModelService) CreateScooterModel(scooterModel *entities.ScooterModel) (int, error) {
-	lastID, err := sm.scooterModelRepository.CreateScooterModel(scooterModel)
-	if err != nil {
-		return 0, err
-	}
-	return lastID, nil
+func (sm ScooterModelService) CreateScooterModel(scooterModel *entities.ScooterModel) {
+	 sm.scooterModelRepository.CreateScooterModel(scooterModel)
 }
 
 func (sm ScooterModelService) GetScooterModels() (*[]entities.ScooterModel, error) {
@@ -47,12 +43,12 @@ func (sm ScooterModelService) EditScooterModel(model *entities.ScooterModel) (in
 	return rowsAffected, nil
 }
 
-func (sm ScooterModelService) DeleteScooterModel(scooterID int) (int, error) {
-	rowsAffected, err := sm.scooterModelRepository.DeleteScooterModel(scooterID)
+func (sm ScooterModelService) DeleteScooterModel(scooterID int) error{
+	_, err := sm.scooterModelRepository.DeleteScooterModel(scooterID)
 	if err != nil {
-		return 0, err
+		return  err
 	}
-	return rowsAffected, nil
+	return nil
 }
 
 func (sm ScooterModelService) GetScooterModelByID(modelID int) (*entities.ScooterModel, error) {

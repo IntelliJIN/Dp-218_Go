@@ -4,6 +4,7 @@ import (
 	"Dp-218_Go/entities"
 	"Dp-218_Go/pgdb"
 	"context"
+	"fmt"
 	_ "github.com/lib/pq"
 )
 
@@ -18,41 +19,31 @@ func NewScooterModelRepository(db *pgdb.PgDB) *ScooterModelRepository {
 }
 
 type ScooterModelRepositoryI interface {
-	CreateScooterModel(scooter *entities.ScooterModel) (int, error)
+	CreateScooterModel(scooterModel *entities.ScooterModel)
 	GetScooterModels() (*[]entities.ScooterModel, error)
-	UpdateScooterModel(scooter *entities.ScooterModel) (int, error)
-	DeleteScooterModel(id int) (int, error)
+	UpdateScooterModel(scooterModel *entities.ScooterModel) (int, error)
+	DeleteScooterModel(id int) (error, error)
 	GetScooterModelById(modelId int) (*entities.ScooterModel, error)
 }
 
-func (sm ScooterModelRepository)CreateScooterModel(model *entities.ScooterModel) (int, error) {
-	res, err := sm.db.Exec(context.Background(),"INSERT INTO scooter_models (payment_type_id,  model_name, max_weight, speed) VALUES ($1, $2, $3, $4)",
-		 &model.PaymentTypeId, &model.ModelName, &model.MaxWeight, &model.Speed)
+func (sm ScooterModelRepository)CreateScooterModel(model *entities.ScooterModel){
+	err, _ := sm.db.Exec(context.Background(), `INSERT INTO scooter_models (payment_type_id, model_name, max_weight, speed) VALUES ($1, $2, $3, $4)`,
+		&model.PaymentTypeId, &model.ModelName, &model.MaxWeight, &model.Speed)
 	if err != nil {
-		if err != nil {
-			return 0, err
-		}
-		return 0, err
+		fmt.Println(err)
 	}
-
-	lastID := res.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
-
-	return int(lastID), nil
 }
 
 func (sm ScooterModelRepository)GetScooterModels() (*[]entities.ScooterModel, error) {
 	var models []entities.ScooterModel
-	rows, err := sm.db.Query(context.Background(),"SELECT * FROM scooter_models")
-
+	rows, err := sm.db.Query(context.Background(),`SELECT id, payment_type_id, model_name, max_weight, speed FROM scooter_models ORDER BY id DESC`)
 	if err != nil {
 		return nil, err
 	}
+
 	model := entities.ScooterModel{}
 	for rows.Next() {
-		err = rows.Scan(&model.Id, &model.ModelName, &model.MaxWeight, &model.Speed)
+		err = rows.Scan(&model.Id,&model.PaymentTypeId, &model.ModelName, &model.MaxWeight, &model.Speed)
 		if err != nil {
 			return nil, err
 		}
@@ -62,7 +53,7 @@ func (sm ScooterModelRepository)GetScooterModels() (*[]entities.ScooterModel, er
 }
 
 func (sm ScooterModelRepository)UpdateScooterModel(model *entities.ScooterModel) (int, error) {
-	res, err := sm.db.Exec(context.Background(), "UPDATE scooter_models SET payment_type_id=$1, model_name=$2, max_weight=$3, speed WHERE id=$4",
+	res, err := sm.db.Exec(context.Background(), `UPDATE scooter_models SET payment_type_id=$1, model_name=$2, max_weight=$3, speed=$4 WHERE id=$5`,
 		&model.PaymentTypeId, &model.ModelName, &model.MaxWeight, &model.Speed, &model.Id)
 	if err != nil {
 		return 0, err
@@ -72,26 +63,25 @@ func (sm ScooterModelRepository)UpdateScooterModel(model *entities.ScooterModel)
 	return int(rowsAffected), nil
 }
 
-func (sm ScooterModelRepository)DeleteScooterModel(id int) (int, error) {
-	_, err := sm.db.Exec(context.Background(), "`DELETE * FROM scooter WHERE model_id=$1", id)
+func (sm ScooterModelRepository)DeleteScooterModel(id int)  (error,error) {
+/*	_, err := sm.db.Exec(context.Background(), `DELETE * FROM scooters WHERE model_id=$1`, id)
 	if err != nil {
-		return 0, err
+		return  nil, err
 	}
 
-	res1, err := sm.db.Exec(context.Background(), "`DELETE FROM scooter_models WHERE id=$1", id)
+ */
+
+	_, err := sm.db.Exec(context.Background(), `DELETE FROM scooter_models WHERE id=$1`, id)
 	if err != nil {
-		return 0, err
+		return  err,nil
 	}
-	rowsAffected := res1.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
-	return int(rowsAffected), nil
+
+	return  nil,nil
 }
 
-func (sm ScooterModelRepository) GetScooterModelById(modelId int) (*entities.ScooterModel, error) {
+func (sm ScooterModelRepository) GetScooterModelById(id int) (*entities.ScooterModel, error) {
 	var scooterModel entities.ScooterModel
-	rows, err := sm.db.Query(context.Background(),"SELECT * FROM scooter_models  WHERE id=$1", modelId)
+	rows, err := sm.db.Query(context.Background(),`SELECT id, payment_type_id, model_name, max_weight, speed FROM scooter_models  WHERE id=$1`, id)
 	if err != nil {
 		return nil, err
 	}

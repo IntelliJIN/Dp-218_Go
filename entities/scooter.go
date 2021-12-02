@@ -3,7 +3,6 @@ package entities
 import "time"
 
 type ScooterUploaded struct {
-	Id 				 	int     `json,scv:"id"`
 	ModelId 		 	int     `json,scv:"model_id"`
 	OwnerId			 	int 	`json,scv:"owner_id"`
 	SerialNumber 	  	string  `json,scv:"serial_number"`

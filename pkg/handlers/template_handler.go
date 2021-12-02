@@ -19,7 +19,6 @@ func NewFileHandler(fileService services.FileServiceI) *FileHandler {
 
 type FileHandlerI interface {
 	UploadFil(w http.ResponseWriter, r *http.Request)
-	RunCheck(w http.ResponseWriter, r *http.Request)
 }
 
 func (f FileHandler)UploadFile(w http.ResponseWriter, r *http.Request){

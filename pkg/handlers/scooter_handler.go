@@ -5,6 +5,7 @@ import (
 	"Dp-218_Go/pkg/services"
 	"encoding/json"
 	"net/http"
+	"strconv"
 )
 
 type ScooterHandler struct {
@@ -34,7 +35,7 @@ func (sm ScooterHandler) CreateScooter(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotAcceptable)
 		return
 	}
-	_,err = sm.scooterService.CreateScooter(&scooter)
+	sm.scooterService.CreateScooter(&scooter)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotAcceptable)
 		return
@@ -43,61 +44,60 @@ func (sm ScooterHandler) CreateScooter(w http.ResponseWriter, r *http.Request) {
 }
 
 func (sm ScooterHandler) GetScooters(w http.ResponseWriter, r *http.Request) {
-	var scooters []entities.Scooter
-	err := json.NewDecoder(r.Body).Decode(&scooters)
+	p, err := sm.scooterService.GetScooters()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	_, err = sm.scooterService.GetScooters()
-	w.WriteHeader(http.StatusOK)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
+		http.Error(w, "something went wrong", http.StatusInternalServerError)
 		return
 	}
 
+	var resp []entities.Scooter
+	for _, x := range *p {
+		resp = append(
+			resp,
+			entities.Scooter{Id: x.Id, ModelId: x.ModelId, OwnerId: x.OwnerId, SerialNumber: x.SerialNumber},
+		)
+	}
+
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
 }
 
 func (sm ScooterHandler) UpdateScooterSerial(w http.ResponseWriter, r *http.Request) {
 	var scooter entities.Scooter
 	err := json.NewDecoder(r.Body).Decode(&scooter)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	_,err = sm.scooterService.UpdateScooterSerial(&scooter)
+	rowsAffected, err := sm.scooterService.UpdateScooterSerial(&entities.Scooter{Id: scooter.Id,
+		SerialNumber: scooter.SerialNumber})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	if rowsAffected == 0 {
+		http.Error(w, "nothing was changed", http.StatusNotModified)
+		return
+	}
 }
 
 func (sm ScooterHandler) DeleteScooter(w http.ResponseWriter, r *http.Request) {
-	var scooter entities.Scooter
-	err := json.NewDecoder(r.Body).Decode(&scooter)
+	ID, _ := strconv.Atoi(r.URL.Query().Get("id"))
+
+	_, err := sm.scooterService.DeleteScooter(ID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
+		http.Error(w, "something went wrong", http.StatusInternalServerError)
 		return
 	}
-	_,err = sm.scooterService.DeleteScooter(scooter.Id)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
-		return
-	}
+
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("scooter successfully deleted"))
 }
 
 func (sm ScooterHandler) GetScooterByModelId(w http.ResponseWriter, r *http.Request) {
-	var scooters []entities.Scooter
-	var model entities.ScooterModel
-	err := json.NewDecoder(r.Body).Decode(&scooters)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
-		return
-	}
-	_, err = sm.scooterService.GetScooterByModelId(model.Id)
+	ID, _ := strconv.Atoi(r.URL.Query().Get("model_id"))
+
+	_, err := sm.scooterService.GetScooterByModelId(ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotAcceptable)
 		return
@@ -106,14 +106,9 @@ func (sm ScooterHandler) GetScooterByModelId(w http.ResponseWriter, r *http.Requ
 }
 
 func (sm ScooterHandler) GetScooterByModelName(w http.ResponseWriter, r *http.Request) {
-	var scooters []entities.Scooter
-	var model entities.ScooterModel
-	err := json.NewDecoder(r.Body).Decode(&scooters)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
-		return
-	}
-	_, err = sm.scooterService.GetScooterByModelName(model.ModelName)
+	name := r.URL.Query().Get("model_name")
+
+	_, err := sm.scooterService.GetScooterByModelName(name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotAcceptable)
 		return
@@ -122,13 +117,9 @@ func (sm ScooterHandler) GetScooterByModelName(w http.ResponseWriter, r *http.Re
 }
 
 func (sm ScooterHandler) GetScooterById(w http.ResponseWriter, r *http.Request) {
-	var scooter entities.Scooter
-	err := json.NewDecoder(r.Body).Decode(&scooter)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
-		return
-	}
-	_, err = sm.scooterService.GetScooterByID(scooter.Id)
+	ID, _ := strconv.Atoi(r.URL.Query().Get("id"))
+
+	_, err := sm.scooterService.GetScooterByID(ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotAcceptable)
 		return
