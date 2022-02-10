@@ -8,7 +8,6 @@ import (
 	"Dp218Go/routing/grpcserver"
 	"Dp218Go/routing/httpserver"
 	"Dp218Go/services"
-	"Dp218Go/utils"
 	"fmt"
 	"log"
 	"net/http"
@@ -21,8 +20,6 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/gorilla/sessions"
 )
-
-var sessionKey = "secretkey"
 
 func main() {
 
@@ -47,28 +44,37 @@ func main() {
 	var userRoleRepoDB = postgres.NewUserRepoDB(db)
 	var userService = services.NewUserService(userRoleRepoDB, userRoleRepoDB)
 
-	var accRepoDb = postgres.NewAccountRepoDB(userRoleRepoDB, db)
-	var accService = services.NewAccountService(accRepoDb, accRepoDb, accRepoDb)
-	var stationRepoDb = postgres.NewStationRepoDB(db)
-	var stationService = services.NewStationService(stationRepoDb)
+	var accRepoDB = postgres.NewAccountRepoDB(userRoleRepoDB, db)
+	var clock = services.NewClock()
+	var accService = services.NewAccountService(accRepoDB, accRepoDB, accRepoDB, clock)
+	var stationRepoDB = postgres.NewStationRepoDB(db)
+	var stationService = services.NewStationService(stationRepoDB)
 
 	var scooterRepo = postgres.NewScooterRepoDB(db)
-	var grpcScooterService = services.NewGrpcScooterService(scooterRepo)
+	var grpcScooterService = services.NewGrpcScooterService(scooterRepo, stationService)
 	var scooterService = services.NewScooterService(scooterRepo)
 
 	var supplierRepoDB = postgres.NewSupplierRepoDB(db)
 	var supplierService = services.NewSupplierService(supplierRepoDB)
 
-	var problemRepoDb = postgres.NewProblemRepoDB(userRoleRepoDB, scooterRepo, db)
-	var problemService = services.NewProblemService(problemRepoDb)
+	var problemRepoDB = postgres.NewProblemRepoDB(userRoleRepoDB, scooterRepo, db)
+	var solutionRepoDB = postgres.NewSolutionRepoDB(db)
+	var problemService = services.NewProblemService(problemRepoDB, solutionRepoDB)
 
 	var orderRepoDB = postgres.NewOrderRepoDB(db)
 	var orderService = services.NewOrderService(orderRepoDB)
 
-	sessStore := sessions.NewCookieStore([]byte(sessionKey))
+	var scootersInitRepoDb = postgres.NewScooterInitRepoDB(db)
+	var scootersInitService = services.NewScooterInitService(scootersInitRepoDb)
+
+	sessStore := sessions.NewCookieStore([]byte(configs.SESSION_SECRET))
 	authService := services.NewAuthService(userRoleRepoDB, sessStore)
 
-	handler := routing.NewRouter(authService)
+	custService := services.NewCustomerService(stationRepoDB)
+
+	handler := routing.NewRouter()
+	routing.AddAuthHandler(handler, authService)
+	routing.AddCustomerHandler(handler, custService)
 	routing.AddUserHandler(handler, userService)
 	routing.AddStationHandler(handler, stationService)
 	routing.AddAccountHandler(handler, accService)
@@ -77,14 +83,16 @@ func main() {
 	routing.AddGrpcScooterHandler(handler, grpcScooterService)
 	routing.AddOrderHandler(handler, orderService)
 	routing.AddSupplierHandler(handler, supplierService)
+	routing.AddScooterInitHandler(handler, scootersInitService)
 	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
 	handler.HandleFunc("/scooter", httpServer.ScooterHandler)
+
+	//utils.CheckKafka() //TODO: delete after checking
 
 	grpcServer := grpcserver.NewGrpcServer()
 	protos.RegisterScooterServiceServer(grpcServer, httpServer)
 	http.ListenAndServe(":8080", handler)
 
-	utils.CheckKafka() //TODO: delete after checking
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
